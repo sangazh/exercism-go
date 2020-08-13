@@ -17,12 +17,7 @@ func (c *ShiftCipher) Encode(input string) (output string) {
 	input = strings.ToLower(input)
 	for _, s := range input {
 		if unicode.IsLetter(s) {
-			ss := s + c.distance
-			if ss > 'z' {
-				ss -= 26
-			} else if ss < 'a' {
-				ss += 26
-			}
+			ss := getLetter(s + c.distance)
 			output += string(ss)
 		}
 	}
@@ -31,13 +26,7 @@ func (c *ShiftCipher) Encode(input string) (output string) {
 }
 func (c *ShiftCipher) Decode(input string) (output string) {
 	for _, s := range input {
-		ss := s - c.distance
-
-		if ss < 'a' {
-			ss += 26
-		} else if ss > 'z' {
-			ss -= 26
-		}
+		ss := getLetter(s - c.distance)
 		output += string(ss)
 	}
 	return
