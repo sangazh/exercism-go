@@ -66,8 +66,6 @@ func logMon(log chan string, nMsg chan int, t *testing.T) {
 	nMsg <- n
 }
 
-type Action3
-
 // Same tests as step 2; single robot, but expect log messages on wall bumps.
 func TestOneStep3(t *testing.T) {
 	for i := 1; i <= len(testOneRobot); i++ {

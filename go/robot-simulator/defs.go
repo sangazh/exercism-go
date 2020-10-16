@@ -30,3 +30,7 @@ type Step3Robot struct {
 	Name string
 	Step2Robot
 }
+
+func (r *Step2Robot) String() string {
+	return fmt.Sprintf("%s (%d, %d)", r.Dir, r.Easting, r.Northing)
+}
