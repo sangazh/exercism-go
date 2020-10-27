@@ -3,6 +3,7 @@ package ledger
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -10,6 +11,10 @@ import (
 
 type LocaleType string
 type Currency string
+
+func (t LocaleType) String() string {
+	return string(t)
+}
 
 const (
 	localeUS LocaleType = "en-US"
@@ -204,30 +209,19 @@ func FormatLedger(currency string, locale string, entries []Entry) (string, erro
 	for _, e := range entries {
 		entriesCopy = append(entriesCopy, e)
 	}
+
 	if len(entries) == 0 {
-		if _, err := FormatLedger(currency, "en-US", []Entry{{Date: "2014-01-01", Description: "", Change: 0}}); err != nil {
+		if _, err := FormatLedger(currency, localeUS.String(), []Entry{{Date: "2014-01-01"}}); err != nil {
 			return "", err
 		}
 	}
-	m1 := map[bool]int{true: 0, false: 1}
-	m2 := map[bool]int{true: -1, false: 1}
-	es := entriesCopy
-	for len(es) > 1 {
-		first, rest := es[0], es[1:]
-		success := false
-		for !success {
-			success = true
-			for i, e := range rest {
-				if (m1[e.Date == first.Date]*m2[e.Date < first.Date]*4 +
-					m1[e.Description == first.Description]*m2[e.Description < first.Description]*2 +
-					m1[e.Change == first.Change]*m2[e.Change < first.Change]*1) < 0 {
-					es[0], es[i+1] = es[i+1], es[0]
-					success = false
-				}
-			}
-		}
-		es = es[1:]
-	}
+
+	sort.Slice(entriesCopy, func(i, j int) bool {
+		return entriesCopy[i].Date <= entriesCopy[j].Date &&
+			entriesCopy[i].Description <= entriesCopy[j].Description &&
+			entriesCopy[i].Change <= entriesCopy[j].Change
+	})
+
 	s := formatter.Title()
 
 	// Parallelism, always a great idea
@@ -243,10 +237,8 @@ func FormatLedger(currency string, locale string, entries []Entry) (string, erro
 		}
 		ss[v.i] = v.text
 	}
-	for i := 0; i < len(entriesCopy); i++ {
-		s += ss[i]
-	}
-	return s, nil
+	s2 := strings.Join(ss, "")
+	return s + s2, nil
 }
 
 func handle(formatter EntryFormatter, i int, entry Entry, co chan chanStruct) {
@@ -254,10 +246,10 @@ func handle(formatter EntryFormatter, i int, entry Entry, co chan chanStruct) {
 		co <- chanStruct{err: emptyErr}
 	}
 
-	dateS := formatter.FormatDate(entry.date)
-	a := formatter.FormatCurrency(entry.Change)
+	date := formatter.FormatDate(entry.date)
+	change := formatter.FormatCurrency(entry.Change)
 
-	line := FormatLine(dateS, entry.Description, a)
+	line := FormatLine(date, entry.Description, change)
 	co <- chanStruct{i: i, text: line}
 }
 
