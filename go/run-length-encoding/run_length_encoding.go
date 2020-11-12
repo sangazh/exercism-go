@@ -2,6 +2,8 @@ package encode
 
 import (
 	"fmt"
+	"strconv"
+	"unicode"
 )
 
 func RunLengthEncode(input string) (output string) {
@@ -38,11 +40,32 @@ func RunLengthEncode(input string) (output string) {
 
 }
 
-func RunLengthDecode(input string) string {
+func RunLengthDecode(input string) (output string) {
 	if len(input) == 0 {
 		return input
 	}
 
-	return ""
+	var curNumber string
+	for _, char := range input {
+		if unicode.IsDigit(char) {
+			curNumber += string(char)
+		} else {
+			n, _ := strconv.Atoi(curNumber)
+			output += printN(string(char), n)
+			curNumber = ""
+		}
+	}
 
+	return
+
+}
+
+func printN(char string, n int) (output string) {
+	if n == 0 {
+		return char
+	}
+	for i := 0; i < n; i++ {
+		output += char
+	}
+	return
 }
