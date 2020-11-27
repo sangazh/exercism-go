@@ -14,6 +14,7 @@ func TestChange(t *testing.T) {
 					tc.description, tc.coins, tc.target, tc.expectedChange, err.Error())
 			} else {
 				if !reflect.DeepEqual(actual, tc.expectedChange) {
+					t.Logf("expected count: %d actual count:%d", len(tc.expectedChange), len(actual))
 					t.Fatalf("%s : Change(%v, %d): expected %#v, actual %#v",
 						tc.description, tc.coins, tc.target, tc.expectedChange, actual)
 				} else {
